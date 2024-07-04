@@ -7,8 +7,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.http import urlencode
 from django.views.generic import TemplateView
-from kenar.app import Scope
-from kenar.models.oauth import OauthResourceType
+from kenar import Scope, OauthResourceType
 from rest_framework.decorators import api_view
 
 from addon.models import Post
