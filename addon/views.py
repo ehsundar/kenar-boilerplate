@@ -29,7 +29,7 @@ class LandingView(TemplateView):
             "return_url": reverse("addon_app"),
         }
         return {
-            "oauth_redirect": f"{reverse("start_app")}%{urlencode(oauth_params)}",
+            "oauth_redirect": f"{reverse("start_app")}?{urlencode(oauth_params)}",
         }
 
 
@@ -90,6 +90,8 @@ def addon_app(request):
             kenar.LegendTitleRow(
                 title="فروش ویژه",
                 subtitle="محصولات دانلودی",
+                image_url="logo",
+                tags=[],
             )
         ]
     )
