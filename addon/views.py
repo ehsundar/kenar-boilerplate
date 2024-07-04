@@ -1,8 +1,12 @@
 import logging
 
+import kenar
 import pydantic
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
+from django.urls import reverse
+from django.utils.http import urlencode
+from django.views.generic import TemplateView
 from kenar.app import Scope
 from kenar.models.oauth import OauthResourceType
 from rest_framework.decorators import api_view
@@ -16,12 +20,28 @@ from oauth.schemas import OAuthSession, OAuthSessionType
 logger = logging.getLogger(__name__)
 
 
+class LandingView(TemplateView):
+    template_name = "landing.html"
+
+    def get_context_data(self, **kwargs):
+        post_token = self.request.GET.get("post_token")
+        oauth_params = {
+            "post_token": post_token,
+            "return_url": reverse("addon_app"),
+        }
+        return {
+            "oauth_redirect": f"{reverse("start_app")}%{urlencode(oauth_params)}",
+        }
+
+
 @api_view(["GET"])
 def addon_oauth(request):
     post_token = request.query_params.get("post_token")
     callback_url = request.query_params.get("return_url")
 
     post, _ = Post.objects.get_or_create(token=post_token)
+
+    callback_url = request.build_absolute_uri(callback_url)
 
     oauth_session = OAuthSession(
         callback_url=callback_url,
@@ -63,8 +83,18 @@ def addon_app(request):
     except OAuth.DoesNotExist:
         return HttpResponseForbidden("permission denied")
 
-    # TODO: Implement logic for after opening your application in post
-    # Example: create post addon
+    kenar_client = get_divar_kenar_client()
+
+    post_addon = kenar.CreatePostAddonRequest(
+        token=post.token,
+        widgets=[
+            kenar.LegendTitleRow(
+                title="فروش ویژه",
+                subtitle="محصولات دانلودی",
+            )
+        ]
+    )
+    kenar_client.addon.create_post_addon(oauth.access_token, post_addon)
 
     # After processing the post logic, redirect to the callback URL
     callback_url = oauth_session.get_callback_url()

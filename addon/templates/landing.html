@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block contents %}
+  <div class="container">
+    <div class="row mt-3 mb-2">
+      <h1 class="col text-center">
+        فروش محصولات دانلودی
+      </h1>
+    </div>
+    <div class="row m-1 mt-4">
+      <div class="">
+        <div class="">
+          <ul>
+            <li>
+              با آپلود محصول خود، به سادگی آن را به فروش برسانید
+            </li>
+            <li>
+              پرداخت قطعی خریدار
+            </li>
+            <li>
+              تسویه حساب روزانه
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <a class="btn btn-success btn-block w-100" href="{{ oauth_redirect }}">اعطای دسترسی</a>
+      </div>
+    </div>
+  </div>
+{% endblock contents %}

@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 
-from kenar.app import AppConfig, KenarApp
+from kenar import ClientConfig
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-APP_HOST = os.getenv("APP_HOST")
+APP_HOST = os.getenv("APP_HOST", "localhost")
 APP_BASE_URL = "https://" + APP_HOST
 
 ALLOWED_HOSTS = [APP_HOST, "localhost", "127.0.0.1"]
@@ -36,8 +36,8 @@ CSRF_TRUSTED_ORIGINS = [APP_BASE_URL, "http://localhost:8000", "http://127.0.0.1
 DATABASE_HOST = os.getenv("DATABASE_HOST", "localhost")
 DATABASE_PORT = os.getenv("DATABASE_PORT", "5432")
 DATABASE_NAME = os.getenv("DATABASE_NAME", "kenar")
-DATABASE_USER = os.getenv("DATABASE_USER", "postgres")
-DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD", "postgres")
+DATABASE_USER = os.getenv("DATABASE_USER", "kenar_dev")
+DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD", "kenar_dev")
 
 # Application definition
 
@@ -70,6 +70,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "APP_DIRS": True,
+        "DIRS": ["templates"],
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
@@ -144,7 +145,7 @@ OAUTH_SESSION_KEY = "oauth_session"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-divar_kenar_client_conf = AppConfig(
+divar_kenar_client_conf = ClientConfig(
     app_slug=os.environ.get("KENAR_APP_SLUG"),
     api_key=os.environ.get("KENAR_API_KEY"),
     oauth_secret=os.environ.get("KENAR_OAUTH_SECRET"),
