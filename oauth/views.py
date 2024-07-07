@@ -60,7 +60,7 @@ def oauth_callback(request):
 
         if oauth_session.type == OAuthSessionType.POST.value:
             oauth.save()
-            base_url = reverse("addon_app")
+            base_url = reverse("addon.oauth_callback")
             query_string = urlencode({"state": oauth_session.state})
             url = f"{base_url}?{query_string}"
             return redirect(url)

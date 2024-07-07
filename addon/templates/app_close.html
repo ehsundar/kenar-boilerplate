@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block contents %}
+  <div class="container">
+    <div class="row mt-3 mb-2">
+      <h1 class="col text-center">
+        با موفقیت ذخیره شد
+      </h1>
+    </div>
+    <div class="row">
+      <div class="col">
+        <button class="btn btn-success btn-block w-100" onclick=closeApp()>بستن</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+      function closeApp() {
+          window.close();
+      }
+  </script>
+{% endblock contents %}
