@@ -10,8 +10,8 @@ class DivarUsers(models.Model):
 
 
 class Product(models.Model):
+    post_token = models.CharField(max_length=9, primary_key=True)
     owner = models.ForeignKey(DivarUsers, on_delete=models.CASCADE)
-    post_token = models.CharField(max_length=9)
 
     name = models.CharField(max_length=50)
     price = models.IntegerField()

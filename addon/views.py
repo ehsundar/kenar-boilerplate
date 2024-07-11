@@ -5,7 +5,6 @@ import pydantic
 from django.http import HttpResponseForbidden, HttpResponseNotFound, HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils.http import urlencode
 from django.views import View
 from django.views.generic import TemplateView
 from kenar import Scope, OauthResourceType
@@ -112,7 +111,7 @@ class CreateProductView(View):
                 kenar.WideButtonBar(
                     button=kenar.WideButtonBar.Button(
                         title="خرید محصول",
-                        link=f"https://dl-addon.darkube.app/addon/buy/{p.id}"
+                        link=f"https://dl-addon.darkube.app/addon/buy/{post.token}"
                     ),
                 ),
             ]
@@ -179,25 +178,24 @@ def addon_app(request):
     return redirect(callback_url)
 
 
-class BuyProductView(TemplateView):
+class BuyProductView(View):
     template_name = "buy.html"
 
-    def get_context_data(self, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
-            p = Product.objects.get(id=self.kwargs.get("product_id"))
+            p = Product.objects.get(post_token=self.kwargs.get("post_token"))
         except Product.DoesNotExist as e:
             logger.error(e)
             return HttpResponseNotFound("product not found")
 
         oauth_session = OAuthSession(
-            callback_url=reverse("addon.product.demo", kwargs={"product_id": p.id}),
+            callback_url=reverse("addon.product.demo", kwargs={"post_token": p.post_token}),
             type=OAuthSessionType.POST,
             post_token=p.post_token,
         )
         self.request.session[settings.OAUTH_SESSION_KEY] = oauth_session.model_dump(exclude_none=True)
 
         kenar_client = get_divar_kenar_client()
-        kenar_client.addon.get_user_addons(kenar.GetUserAddonsRequest())
 
         oauth_scopes = [
             Scope(resource_type=OauthResourceType.USER_PHONE),
@@ -208,11 +206,11 @@ class BuyProductView(TemplateView):
             state=oauth_session.state,
         )
 
-        return {
+        return render(request, self.template_name, {
             "title": f"خرید محصول «{p.name}»",
             "product": p,
             "oauth_redirect": oauth_url,
-        }
+        })
 
 
 class ProductDemoView(TemplateView):
@@ -220,7 +218,7 @@ class ProductDemoView(TemplateView):
 
     def get_context_data(self, **kwargs):
         try:
-            p = Product.objects.get(id=self.kwargs.get("product_id"))
+            p = Product.objects.get(post_token=self.kwargs.get("post_token"))
         except Product.DoesNotExist as e:
             logger.error(e)
             return HttpResponseNotFound("product not found")
