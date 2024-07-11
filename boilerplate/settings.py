@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = True
 
 APP_HOST = os.getenv("APP_HOST", "localhost")
-APP_BASE_URL = "https://1516-16-24-70-196.ngrok-free.app"
+APP_BASE_URL = "https://88da-16-24-70-196.ngrok-free.app"
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".ngrok-free.app", ".darkube.app"]
 

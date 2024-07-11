@@ -2,7 +2,7 @@ import logging
 
 import kenar
 import pydantic
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseNotFound, HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.http import urlencode
@@ -21,11 +21,14 @@ from oauth.schemas import OAuthSession, OAuthSessionType
 logger = logging.getLogger(__name__)
 
 
-class LandingView(TemplateView):
+class LandingView(View):
     template_name = "landing.html"
 
-    def get_context_data(self, **kwargs):
-        post_token = self.request.GET.get("post_token")
+    def get(self, request, *args, **kwargs):
+        post_token = request.GET.get("post_token")
+        if not post_token:
+            return HttpResponseBadRequest("missing post token")
+
         post, _ = Post.objects.get_or_create(token=post_token)
 
         oauth_session = OAuthSession(
@@ -33,7 +36,7 @@ class LandingView(TemplateView):
             type=OAuthSessionType.POST,
             post_token=post_token,
         )
-        self.request.session[settings.OAUTH_SESSION_KEY] = oauth_session.model_dump(exclude_none=True)
+        request.session[settings.OAUTH_SESSION_KEY] = oauth_session.model_dump(exclude_none=True)
 
         kenar_client = get_divar_kenar_client()
 
@@ -47,9 +50,9 @@ class LandingView(TemplateView):
             state=oauth_session.state,
         )
 
-        return {
+        return render(request, self.template_name, {
             "oauth_redirect": oauth_url,
-        }
+        })
 
 
 class CreateProductView(View):
@@ -91,6 +94,7 @@ class CreateProductView(View):
 
         p = Product.objects.create(
             owner=u,
+            post_token=post.token,
             name=form.cleaned_data.get("name"),
             price=form.cleaned_data.get("price"),
             content=form.cleaned_data.get("content"),
@@ -173,3 +177,56 @@ def addon_app(request):
     # After processing the post logic, redirect to the callback URL
     callback_url = oauth_session.get_callback_url()
     return redirect(callback_url)
+
+
+class BuyProductView(TemplateView):
+    template_name = "buy.html"
+
+    def get_context_data(self, **kwargs):
+        try:
+            p = Product.objects.get(id=self.kwargs.get("product_id"))
+        except Product.DoesNotExist as e:
+            logger.error(e)
+            return HttpResponseNotFound("product not found")
+
+        oauth_session = OAuthSession(
+            callback_url=reverse("addon.product.demo", kwargs={"product_id": p.id}),
+            type=OAuthSessionType.POST,
+            post_token=p.post_token,
+        )
+        self.request.session[settings.OAUTH_SESSION_KEY] = oauth_session.model_dump(exclude_none=True)
+
+        kenar_client = get_divar_kenar_client()
+        kenar_client.addon.get_user_addons(kenar.GetUserAddonsRequest())
+
+        oauth_scopes = [
+            Scope(resource_type=OauthResourceType.USER_PHONE),
+        ]
+
+        oauth_url = kenar_client.oauth.get_oauth_redirect(
+            scopes=oauth_scopes,
+            state=oauth_session.state,
+        )
+
+        return {
+            "title": f"خرید محصول «{p.name}»",
+            "product": p,
+            "oauth_redirect": oauth_url,
+        }
+
+
+class ProductDemoView(TemplateView):
+    template_name = "demo.html"
+
+    def get_context_data(self, **kwargs):
+        try:
+            p = Product.objects.get(id=self.kwargs.get("product_id"))
+        except Product.DoesNotExist as e:
+            logger.error(e)
+            return HttpResponseNotFound("product not found")
+
+        return {
+            "title": f"دموی محصول «{p.name}»",
+            "product": p,
+            "payment_redirect": "",
+        }

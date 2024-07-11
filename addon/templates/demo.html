@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 
+{% block title %}
+  {{ title }}
+{% endblock title %}
+
 {% block contents %}
   <div class="container">
     <div class="row mt-3 mb-2">
       <h1 class="col text-center">
-        فروش محصولات دانلودی
+        {{ title }}
       </h1>
     </div>
     <div class="row m-1 mt-4">
@@ -12,13 +16,7 @@
         <div class="">
           <ul>
             <li>
-              با آپلود محصول خود، به سادگی آن را به فروش برسانید
-            </li>
-            <li>
-              پرداخت قطعی خریدار
-            </li>
-            <li>
-              تسویه حساب روزانه
+              این محصول دارای دمو نیست.
             </li>
           </ul>
         </div>
@@ -26,7 +24,7 @@
     </div>
     <div class="row">
       <div class="col">
-        <a class="btn btn-primary btn-block w-100" href="{{ oauth_redirect }}">شروع فرآیند</a>
+        <a class="btn btn-primary btn-block w-100" href="{{ payment_redirect }}">انتقال به درگاه پرداخت</a>
       </div>
     </div>
   </div>

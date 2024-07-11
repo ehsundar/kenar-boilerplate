@@ -11,10 +11,11 @@ class DivarUsers(models.Model):
 
 class Product(models.Model):
     owner = models.ForeignKey(DivarUsers, on_delete=models.CASCADE)
+    post_token = models.CharField(max_length=9)
 
-    name = models.CharField(max_length=50, null=False, blank=False)
-    price = models.IntegerField(null=False, blank=False)
-    content = models.FileField(upload_to='products/', null=False, blank=False)
+    name = models.CharField(max_length=50)
+    price = models.IntegerField()
+    content = models.FileField(upload_to='products/')
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
